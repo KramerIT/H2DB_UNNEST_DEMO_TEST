@@ -35,7 +35,6 @@ class DemoApplicationTests {
 
 	@Test
 	@Transactional
-	// this test works fine with PostgreSQL, and throw exception with H2DB
 	void complexSelectWithUnnestTest() {
 		var demo_1 = new Demo(1L, "one");
 		var demo_2 = new Demo(2L, "two");
@@ -44,7 +43,9 @@ class DemoApplicationTests {
 		entityManager.persist(demo_2);
 		entityManager.persist(demo_3);
 		var resultSize = entityManager
-				.createNativeQuery("SELECT name, UNNEST(ARRAY[1, 2, 3]) FROM DEMO")
+				// https://github.com/h2database/h2database/issues/3799
+//				.createNativeQuery("SELECT name, UNNEST(ARRAY[1, 2, 3]) FROM DEMO") // this part works fine with PostgreSQL, and throw exception with H2DB
+				.createNativeQuery("SELECT name, x FROM DEMO, UNNEST(ARRAY[1, 2, 3]) as func(x)")
 				.getResultList()
 				.size();
 		assertEquals("", 9, resultSize);
